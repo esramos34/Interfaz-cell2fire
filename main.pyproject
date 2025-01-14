@@ -1,0 +1,3 @@
+{
+    "files": ["data_window_ui.py","main.py","processingWindow.py","sim.py","test_polygon.py","main_window_ui.py","elevation_query.py","weather_window.py","ignition_generate.py"]
+}

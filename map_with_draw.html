@@ -1,0 +1,74 @@
+
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.3/leaflet.css">
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css">
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.3/leaflet.js"></script>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+            <script src="qrc:///qtwebchannel/qwebchannel.js"></script>
+            <style>
+                html, body {width: 100%; height: 100%; margin: 0; padding: 0;}
+                #map {position: absolute; top: 0; bottom: 0; right: 0; left: 0;}
+            </style>
+        </head>
+        <body>
+            <div id="map"></div>
+            <script>
+                document.addEventListener("DOMContentLoaded", function() {
+                    var map = L.map('map').setView([-0.1807, -78.4678], 12);
+
+                    L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                        attribution: 'ESRI'
+                    }).addTo(map);
+
+                    var drawnItems = new L.FeatureGroup();
+                    map.addLayer(drawnItems);
+
+                    var drawControl = new L.Control.Draw({
+                        edit: { featureGroup: drawnItems },
+                        draw: {
+                            polygon: true,
+                            rectangle: true,
+                            circle: false,
+                            marker: false,
+                            polyline: false
+                        }
+                    });
+                    map.addControl(drawControl);
+
+                    var bridge;
+                    new QWebChannel(qt.webChannelTransport, function(channel) {
+                        bridge = channel.objects.bridge;
+                    });
+
+                    map.on(L.Draw.Event.CREATED, function(event) {
+                        var layer = event.layer;
+                        drawnItems.addLayer(layer);
+
+                        var coordinates = layer.getLatLngs()[0].map(function(latlng) {
+                            return [latlng.lat, latlng.lng];
+                        });
+
+                        if (bridge) {
+                            bridge.save_coordinates(JSON.stringify(coordinates));
+                        }
+                    });
+
+                    map.on(L.Draw.Event.DELETED, function(event) {
+                        var layers = event.layers;
+                        layers.eachLayer(function(layer) {
+                            drawnItems.removeLayer(layer);
+                        });
+
+                        if (bridge) {
+                            bridge.delete_coordinates();
+                        }
+                    });
+                });
+            </script>
+        </body>
+        </html>
+        
