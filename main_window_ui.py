@@ -247,7 +247,7 @@ class MainWindow(QMainWindow):
             return
 
         # Construir comando
-        command = ["python", "main.py"]
+        command = ["Cell2Fire","--sim","S"]
         command += ["--input-instance-folder", self.input_folder_path]
         command += ["--output-folder", self.output_folder_path]
         if sim_years:
@@ -276,10 +276,6 @@ class MainWindow(QMainWindow):
             command += ["--AllowCrownFire"]
         if parallel_threads:
             command += ["--threads", parallel_threads]
-        if self.postprocessing_stats_radio.isChecked():
-            command += ["--stats"]
-        if self.postprocessing_plots_radio.isChecked():
-            command += ["--allPlots"]
 
         # Imprimir el comando
         print("Iniciando simulación con el siguiente comando:")
